@@ -15,8 +15,6 @@
 ### Framework
 * Slim with the MongoDB library for PHP
 
----
-
 ### Before we start...
 ***MongoDB*** belongs to the **NoSQL** Database Manager family.  
 Let's make a simple comparison :
@@ -27,6 +25,8 @@ Let's make a simple comparison :
 | *collection* | *table*    |
 | *document*   | *row*      |
 | *field*      | *column*   |
+
+---
 
 ### Let's get started ! ^\_^
 

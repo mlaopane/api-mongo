@@ -1,0 +1,27 @@
+{
+    "name": "myke/api",
+    "description": "API Slim 3",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mickael LAO-PANE",
+            "email": "mlaopane@gmail.com"
+        }
+    ],
+    "require": {
+        "slim/slim": "^3.9",
+        "phpunit/phpunit": "^6.4",
+        "mongodb/mongodb": "^1.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "CVtheque\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    }
+
+}
