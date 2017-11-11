@@ -10,7 +10,7 @@ use MykeOn\Controller\Controller;
 /**
  *
  */
-abstract class HttpController
+abstract class HttpController extends Controller
 {
     /**
      * @var string
@@ -45,17 +45,12 @@ abstract class HttpController
     {
         $this->setDatabaseData($arguments);
 
-        // Returns a 'bad request' response if no collection is provided for a POST | PUT request
         if (empty($arguments['collection'])) {
-            if ($request->isPost() || $request->isPut()) {
-                return $response->withStatus(400, "POST | PUT not allowed without collection");
-            }
-        } else {
-            $this->setCollectionData($arguments);
-            return $this->handleCollectionRequest($request, $response, $arguments);
+            return $this->handleDatabaseRequest($request, $response, $arguments);
         }
 
-        return $this->handleDatabaseRequest($request, $response, $arguments);
+        $this->setCollectionData($arguments);
+        return $this->handleCollectionRequest($request, $response, $arguments);
     }
 
     /* -------------------- */
