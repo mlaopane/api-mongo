@@ -1,6 +1,6 @@
 <?php
 require '../vendor/autoload.php';
 
-use CVtheque\App;
+use MykeOn\App;
 
 App::launch();

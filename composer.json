@@ -1,6 +1,6 @@
 {
-    "name": "myke/api",
-    "description": "API Slim 3",
+    "name": "mykeon/api",
+    "description": "API with Slim 3 & MongoDB",
     "license": "MIT",
     "authors": [
         {
@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "CVtheque\\": "src/"
+            "MykeOn\\": "src/"
         }
     },
     "autoload-dev": {

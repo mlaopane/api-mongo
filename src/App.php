@@ -1,6 +1,5 @@
 <?php
-
-namespace CVtheque;
+namespace MykeOn;
 
 use Psr\Container\ContainerInterface;
 
@@ -10,14 +9,8 @@ use Psr\Container\ContainerInterface;
 class App
 {
     /**
-     * @var ContainerInterface
+     * Entry point for the API
      */
-    private static $container;
-
-    private function __construct()
-    {
-    }
-
     public static function launch()
     {
         define('ROOT_DIR', dirname(__DIR__));

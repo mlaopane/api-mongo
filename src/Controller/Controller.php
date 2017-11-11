@@ -1,6 +1,6 @@
 <?php
 
-namespace CVtheque\Controller;
+namespace MykeOn\Controller;
 
 use Psr\Container\ContainerInterface;
 use MongoDB\Client;
@@ -36,9 +36,8 @@ abstract class Controller
     /**
      * Fetch a service from the container
      * @param  string $key
-     * @return mixed|null
      */
-    public function fetch(string $key): mixed
+    public function fetch(string $key)
     {
         if (!$this->container->has($key)) {
             return null;
