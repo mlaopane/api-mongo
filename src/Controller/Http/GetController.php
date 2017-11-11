@@ -4,7 +4,6 @@ namespace MykeOn\Controller\Http;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use MongoDB\BSON\ObjectId;
-use MongoDB\Database;
 
 class GetController extends HttpController
 {
@@ -21,7 +20,7 @@ class GetController extends HttpController
     {
         $responseBody = [
             'databaseName' => $this->databaseName,
-            'collections' => $this->fetchCollectionsData($this->database),
+            'collections'  => $this->get('db_manager')->fetchDatabaseData($this->database),
         ];
 
         if (empty($responseBody['collections'])) {
@@ -49,7 +48,7 @@ class GetController extends HttpController
         // Get a document by its id
         if (!empty($args["id"])) {
             $responseBody['data'] = $this->collection->findOne(['_id' => new ObjectId($args["id"])]);
-        // Get one or many documents by filter
+        // Get one or many documents
         } else {
             $responseBody['data'] = $this->collection->find()->toArray();
         }
@@ -75,7 +74,7 @@ class GetController extends HttpController
         while ($collectionIterator->valid()) {
             $collectionName = $collectionIterator->current()->getName();
             // Add a collection to the response body
-            if (!empty($data = $this->database->$collectionName->find()->toArray())) {
+            if (!empty($data = $database->$collectionName->find()->toArray())) {
                 $collections[] = [
                     'name' => $collectionName,
                     'data' => $data,
