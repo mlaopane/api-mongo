@@ -34,15 +34,15 @@ abstract class Controller
     }
 
     /**
-     * Fetch a service from the container
-     * @param  string $key
+     * Get a service from the container
+     * @param string $key
      */
-    public function fetch(string $key)
+    public function get(string $key)
     {
-        if (!$this->container->has($key)) {
-            return null;
+        if ($this->container->has($key)) {
+            return $this->container->get($key);
         }
-        return $this->container->get($key);
+        return null;
     }
 
     public function getDatabase()
