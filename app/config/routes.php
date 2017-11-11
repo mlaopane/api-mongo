@@ -1,30 +1,41 @@
 <?php
 
-use CVtheque\Controller\Collection\{
-    SkillController,
-    ExperienceController,
-    TrainingController
+use MykeOn\Controller\Http\{
+    GetController,
+    PostController,
+    PutController,
+    DeleteController
 };
+use MykeOn\Middleware\AccessControlMiddleware;
 
-/** Database : 'cvtheque' */
-$app->group('/cvtheque', function () {
+$app->add(new AccessControlMiddleware());
 
-    /** Database */
-    // $this->get("/_show", DatabaseController::class.":show")->setName('database_show');
+/** GET request */
+$app
+    ->get("/{database}[/{collection}[/{id}]]", GetController::class.":handleRequest")
+    ->setName('get');
 
-    /** CV */
-    // $this->get("/cv", CvController::class.":get")->setName('cv_get');
+/** POST request */
+$app
+    ->post("/{database}/{collection}", PostController::class.":handleRequest")
+    ->setName('post');
 
-    /** Skill */
-    $this->get("/skill", SkillController::class.":get")->setName('skill_get');
-    $this->post("/skill", SkillController::class.":post")->setName('skill_post');
-    $this->put("/skill/{id:[0-9]+}", SkillController::class.":put")->setName('skill_put');
-    $this->delete("/skill[/{id:[0-9]+}]", SkillController::class.":delete")->setName('skill_delete');
+/** SEARCH request */
+$app
+    ->post("/{database}/_search", PostController::class.":handleDatabaseSearchRequest")
+    ->setName('database_search');
 
-    /** Experience */
-    $this->get("/experience", ExperienceController::class.":get")->setName('experience_get');
+/** SEARCH request */
+$app
+    ->post("/{database}/{collection}/_search", PostController::class.":handleCollectionSearchRequest")
+    ->setName('collection_search');
 
-    /** Training */
-    $this->get("/training", TrainingController::class.":get")->setName('training_get');
+/** PUT request */
+$app
+    ->put("/{database}/{collection}/{id:[0-9]+}", PutController::class.":handleRequest")
+    ->setName('put');
 
-});
+/** DELETE request */
+$app
+    ->delete("/{database}[/{collection}/[/{id}]]", DeleteController::class.":handleRequest")
+    ->setName('delete_request');
