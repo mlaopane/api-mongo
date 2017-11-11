@@ -12,23 +12,23 @@ $app->add(new AccessControlMiddleware());
 
 /** GET request */
 $app
-    ->get("/{database}[/{collection}[/{id}]]", GetController::class.":handleRequest")
+    ->get("/{database:[a-z0-9]+}[/{collection:[a-z0-9]+}[/{id}]]", GetController::class.":handleRequest")
     ->setName('get');
+
+/** ACTION collection request */
+$app
+    ->post("/{database:[a-z0-9]+}/{collection:[a-z0-9]+}/{action:_[a-z]+}", PostController::class.":handleRequest")
+    ->setName('collection_action');
+
+/** ACTION database request */
+$app
+    ->post("/{database:[a-z0-9]+}/{action:_[a-z]+}", PostController::class.":handleRequest")
+    ->setName('database_action');
 
 /** POST request */
 $app
-    ->post("/{database}/{collection}", PostController::class.":handleRequest")
+    ->post("/{database:[a-z0-9]+}/{collection:[a-z0-9]+}", PostController::class.":handleRequest")
     ->setName('post');
-
-/** SEARCH request */
-$app
-    ->post("/{database}/_search", PostController::class.":handleDatabaseSearchRequest")
-    ->setName('database_search');
-
-/** SEARCH request */
-$app
-    ->post("/{database}/{collection}/_search", PostController::class.":handleCollectionSearchRequest")
-    ->setName('collection_search');
 
 /** PUT request */
 $app
