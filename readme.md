@@ -1,19 +1,11 @@
-# Curriculum Vitae API
-
-### Database
-* cvtheque
-
-### Collections
-* identity
-* skill
-* experience
-* training
+# Slim API
 
 ### Dependencies
-* MongoDB
+* PHP 7+
+* MongoDB 1.1+
 
 ### Framework
-* Slim with the MongoDB library for PHP
+* Slim 3 with the MongoDB PHP library
 
 ### Before we start...
 ***MongoDB*** belongs to the **NoSQL** Database Manager family.  
@@ -70,9 +62,9 @@ Here is a generic possibility :
 
 ### API Rules
 
-* You MAY use the ***filter*** for **GET** | **POST** | ***DELETE*** requests
-* The ***filter*** for **PUT** request has no effect
-* The ***filter*** for **DELETE** request has no effect if you provide a document *id*
-* You MUST use the ***data*** for **POST** | **PUT** requests
-* You MAY use the ***data*** for **GET** | **DELETE** requests
-* The value of the ***data*** can be an object or an array of objects
+* You MAY use the ***filter*** key for **POST** | ***DELETE*** requests
+* The ***filter*** key for **PUT** request has no effect
+* The ***filter*** key for **DELETE** request has no effect if you provide a document *id*
+* You MUST use the ***data*** key for **POST** | **PUT** requests
+* You MAY use the ***data*** key for **DELETE** requests
+* The value of the ***data*** key can be an object or an array of objects
