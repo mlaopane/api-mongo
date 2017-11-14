@@ -3,10 +3,11 @@ namespace MykeOn\Controller\Http;
 
 use Slim\Http\Request;
 use Slim\Http\Response;
+use MongoDB\BSON\ObjectId;
 
 class PostController extends HttpController
 {
-    use ActionTrait;
+    use NoFilterTrait;
 
     /**
      *
@@ -18,12 +19,7 @@ class PostController extends HttpController
      */
     public function handleDatabaseRequest(Request $request, Response $response, array $arguments): Response
     {
-        if (isset($arguments['action'])) {
-            return $this->handleActionRequest('database', $request, $response, $arguments);
-        }
-
-        $body = $request->getParsedBody();
-        return $response->withJson(['message' => 'handleDatabaseRequest']);
+        return null;
     }
 
     /**
@@ -38,24 +34,17 @@ class PostController extends HttpController
      */
     public function handleCollectionRequest(Request $request, Response $response, array $arguments): Response
     {
-        if (isset($arguments['action'])) {
-            return $this->handleActionRequest('collection', $request, $response, $arguments);
-        }
-
-        $body = $request->getParsedBody();
-        return $response->withJson(['message' => 'handleCollectionRequest']);
+        $requestBody = $request->getParsedBody();
 
         // NO ACTION if no data provided
-        if (empty($body['data'])) {
+        if (empty($requestBody['data'])) {
             return $response->withStatus(400, "Missing data in the request body");
 
         // CREATE one or many documents
-        } elseif (empty($body['filter'])) {
-            if (isset($body['data'][0])) {
-                return $this->insertManyWithResponse($response, $body['data']);
-            } else {
-                return $this->insertOneWithResponse($response, $body['data']);
-            }
+        } elseif (empty($requestBody['filter'])) {
+            return empty($requestBody['data'][0]) ?
+                $this->insertOneWithResponse($response, $requestBody['data']) :
+                $this->insertManyWithResponse($response, $requestBody['data']);
 
         // UPDATE one or many documents by filter
         } else {
@@ -64,84 +53,32 @@ class PostController extends HttpController
     }
 
     /**
-     *
-     * @param  Request  $request
-     * @param  Response $response
-     * @param  array    $arguments
-     *
-     * @return Response
-     */
-    public function handleDatabaseSearchRequest(Request $request, Response $response, array $arguments): Response
-    {
-        $requestBody = $request->getParsedBody();
-
-        // No filter provided
-        if (empty($requestBody['filter'])) {
-            return $this->noFilterResponse($requestBody, $response);
-        }
-
-        return $response->withJson([
-            'databaseName' => $this->databaseName,
-            'collections'  => $this->get('db_manager')->fetchDatabaseData($this->database, $requestBody['filter']),
-        ]);
-    }
-
-    /**
-     *
-     * @param  Request  $request   [description]
-     * @param  Response $response  [description]
-     * @param  array    $arguments [description]
-     *
-     * @return Response            [description]
-     */
-    public function handleCollectionSearchRequest(Request $request, Response $response, array $arguments): Response
-    {
-        $requestBody = $request->getParsedBody();
-
-        // No filter provided
-        if (empty($requestBody['filter'])) {
-            return $this->noFilterResponse($requestBody, $response);
-        }
-
-        return $response->withJson([
-            'databaseName'   => $this->databaseName,
-            'collectionName' => $this->collectionName,
-            'data'           => $this->collection->find($requestBody['filter'])->toArray(),
-        ]);
-    }
-
-    protected function noFilterResponse(array $requestBody, Response $response): Response
-    {
-        return $response
-            ->withStatus(400, "Missing filter")
-            ->withJson([
-                'error' => "Missing filter key in the request body",
-                'requestBody' => $requestBody,
-            ]);
-    }
-
-    /**
      * @param  Response $response [description]
      * @param  array    $data     [description]
      *
      * @return Response           [description]
      */
-    protected function insertManyWithResponse(Response $response, array $data = []): Response
+    protected function insertManyWithResponse(Response $response, array $documents = []): Response
     {
-        // Prevent the client to insert a custom id
-        $data = array_map(function ($document) {
-            if (key_exists($document['_id'])) {
+        // Update the documents with the generated object id
+        $documents = array_map(function ($document) {
+            // Prevent the client from inserting a custom _id
+            if (isset($document['_id'])) {
                 unset($document['_id']);
             }
+            $document['id'] = $this->collection->insertOne($document)->getInsertedId();
             return $document;
-        }, $data);
 
-        $result = $this->collection->insertMany($data);
-        $data = [
-            "count" => $result->getInsertedCount(),
-            "ids" => $result->getInsertedIds(),
-        ];
-        return $response->withStatus(201, "Created")->withJson($data);
+        }, $documents);
+
+        return $response
+            ->withStatus(201, "Created")
+            ->withJson([
+                'databaseName'   => $this->databaseName,
+                'collectionName' => $this->collectionName,
+                'count'          => count($documents),
+                'data'           => $documents,
+            ]);
     }
 
     /**
@@ -150,19 +87,29 @@ class PostController extends HttpController
      *
      * @return Response
      */
-    protected function insertOneWithResponse(Response $response, array $request_data = []): Response
+    protected function insertOneWithResponse(Response $response, array $document = []): Response
     {
         // Prevent the client to insert a custom id
-        if (key_exists($data['_id'])) {
-            unset($data['_id']);
+        if (isset($document['_id'])) {
+            unset($document['_id']);
         }
-        $result = $this->collection->insertOne($request_data);
-        $insert_id = $result->getInsertedId();
-        $response_data = array_merge(['id' => $result->getInsertedId()], $request_data);
+
+        $result = $this->collection->insertOne($document);
+        $insertedId = $result->getInsertedId();
+        $document['id'] = $insertedId;
+
         return $response
             ->withStatus(201, "Created")
-            ->withHeader('Location', $this->fetch('router')->pathFor("{$this->collection}.get", ['id' => $insert_id]))
-            ->withJson($response_data);
+            ->withHeader('Location', $this->get('router')->pathFor('get', [
+                'database'   => $this->databaseName,
+                'collection' => $this->collectionName,
+                'id'         => $insertedId,
+            ]))
+            ->withJson([
+                'databaseName'   => $this->databaseName,
+                'collectionName' => $this->collectionName,
+                'data'           => $document
+            ]);
     }
 
     /**
