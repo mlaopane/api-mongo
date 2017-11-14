@@ -22,8 +22,8 @@ class Cache implements CacheInterface
      */
     public function get($key, $default = null)
     {
-        if ($this->has($key)) {
-            $file = fopen($this->cacheDir.$key, 'r');
+        if ($this->has((string) $key)) {
+            $file = fopen("$this->cacheDir/$key", 'r');
             $result = json_decode(fgets($file));
             fclose($file);
             return $result;
@@ -38,7 +38,7 @@ class Cache implements CacheInterface
      */
     public function set($key, $value, $ttl = null)
     {
-        $filename = $this->cacheDir."/$key";
+        $filename = "$this->cacheDir/$key";
         $file = fopen($filename, 'w');
         fwrite($file, $value);
         fclose($file);
@@ -48,7 +48,7 @@ class Cache implements CacheInterface
 
     public function delete($key)
     {
-
+        unlink($this->cacheDir.$key);
     }
 
     public function clear()
@@ -73,7 +73,7 @@ class Cache implements CacheInterface
 
     public function has($key)
     {
-        $filename = $this->cacheDir.$key;
+        $filename = "$this->cacheDir/$key";
         if ($file = @fopen($filename, 'r')) {
             fclose($file);
             return true;
