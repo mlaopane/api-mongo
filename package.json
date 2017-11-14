@@ -1,0 +1,23 @@
+{
+  "name": "slim-mongo-api",
+  "version": "1.0.0",
+  "description": "* PHP 7+\r * MongoDB 1.1+\r * [MongoDB Driver for PHP](https://pecl.php.net/package/mongodb)",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "server": "php -S localhost:8000 -t public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mlaopane/cvtheque.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mlaopane/cvtheque/issues"
+  },
+  "homepage": "https://github.com/mlaopane/cvtheque#readme"
+}
