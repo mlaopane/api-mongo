@@ -16,6 +16,7 @@ class AccessControlMiddleware
         'POST',
         'PUT',
         'DELETE',
+        'PATCH',
     ];
 
     public function __invoke($request, $response, $next)
