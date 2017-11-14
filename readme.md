@@ -10,7 +10,8 @@
 
 ## Before we start...
 ***MongoDB*** belongs to the **NoSQL** Database Manager family.  
-Let's make a simple comparison :
+
+A simple comparison :
 
 | MongoDB      |   MySQL    |
 |--------------|------------|
@@ -27,9 +28,10 @@ You can use it locally by :
 1. Browsing to the project root
 2. Opening your terminal
 3. Using the following command to create a local server :  
-`php -S localhost:<port> -t public`
+`php -S localhost:<port> -t public`  
+Alternatively, if you have *npm* installed :  
+`npm run server`  
 
-Use any available port to replace the `<port>` placeholder.  
 You may need to activate the MongoDB Driver extension by adding it to your php.ini file.
 
 ## Making HTTP requests
@@ -42,10 +44,10 @@ This API uses the following HTTP methods :
 * **DELETE**
 
 Here is the URI pattern :  
-`http://localhost:<port>/{database}[/{collection}[/{id}]]`
+`http://localhost:<port>/{database:[a-z0-9_]+}[/{collection:[a-z0-9_]+}[/{id:[a-z0-9]+}]]`
 
 The brackets mean that the identifier inside the curly braces may be optional.
-It actually depends on the request method as we will see further.
+It actually depends on the request type as we will see further.
 
 ## The HTTP message body
 
@@ -69,7 +71,7 @@ Here is a generic possibility :
 
 ## Usage rules
 
-### < POST Request >
+### POST Request
 
 The request body IS required.
 
@@ -79,7 +81,7 @@ Natively, the API provides two kinds of POST requests
 
 Create one/many document(s) for a given collection.  
 
-*Pattern* : `/{database}/{collection}`
+*Pattern* : `/{database:[a-z0-9_]+}/{collection:[a-z0-9_]+}`
 
 ##### *Example*
 
@@ -89,16 +91,16 @@ Create one/many document(s) for a given collection.
 /* Request body */
 {
     "data": [
-        {"name": "Toto", "class": "troll"},
-        {"name": "Tata", "class": "elfe"},
-        {"name": "Titi", "class": "elfe"}
+        {"name": "Toto", "race": "troll"},
+        {"name": "Tata", "race": "elfe"},
+        {"name": "Titi", "race": "elfe"}
     ]
 }
 
 /* Response body */
 {
     "created": 3,
-    "collectionName": "characters",
+    "name": "characters",
     "databaseName": "forest",
     "data": [
         {
@@ -106,21 +108,21 @@ Create one/many document(s) for a given collection.
                 "oid": // Auto-generated unique id
             },
             "name": "Toto",
-            "category": "troll"
+            "race": "troll"
         },
         {
             "_id": {
                 "oid": // Auto-generated unique id
             },
             "name": "Tata",
-            "name": "elfe"
+            "race": "elfe"
         },
         {
             "_id": {
                 "oid": // Auto-generated unique id
             },
             "name": "Titi",
-            "name": "elfe"
+            "race": "elfe"
         }
     ]
 }
@@ -128,47 +130,11 @@ Create one/many document(s) for a given collection.
 
 #### *'Search' request*
 
-Search for documents in a given database or collection.
+Search for documents in a given collection.
 
-*Pattern* :  `/{database}[/{collection}]/_search`  
+*Pattern* :  `/{database:[a-z0-9_]+}/{collection:[a-z0-9_]+}/_search`  
 
 ##### *Examples*
-
-```javascript
-/** POST /forest/_search **/
-
-/* Request body */
-{
-    "filter": {
-        "class": "elfe"
-    }
-}
-
-/* Response body */
-{
-    "matched": 2,
-    "collections" [
-        "collectionName": "characters",
-        "matched": 2,
-        "data": [
-            {
-                "_id": {
-                    "oid": // Already auto-generated unique id
-                },
-                "name": "Tata",
-                "class": "elfe"
-            },
-            {
-                "_id": {
-                    "oid": // Already auto-generated unique id
-                },
-                "name": "Titi",
-                "class": "elfe"
-            }
-        ]
-    ]
-}
-```
 
 ```javascript
 /** POST /forest/characters/_search **/
@@ -176,7 +142,7 @@ Search for documents in a given database or collection.
 /* Request body */
 {
     "filter": {
-        "class": "troll"
+        "race": "troll"
     }
 }
 
@@ -189,7 +155,7 @@ Search for documents in a given database or collection.
                 "oid": // Already auto-generated unique id
             },
             "name": "Toto",
-            "class": "troll"
+            "race": "troll"
         }
     ]
 }
@@ -198,12 +164,12 @@ Search for documents in a given database or collection.
 At some point, you may need advanced filters.  
 Remember that the API is using MongoDB, therefore you are able to use any special operators provided by MongoDB.
 
-Feel free to use the [MongoDB Documentation](https://docs.mongodb.com/manual/reference/) for any help.
-
 ##### *Examples*
 
 ```javascript
 /**  Find documents with an "age" field greater than 18  **/
+
+/* Request body */
 {
     "filter": {
         "age": {
@@ -215,6 +181,8 @@ Feel free to use the [MongoDB Documentation](https://docs.mongodb.com/manual/ref
 
 ```javascript
 /** Find documents without a "category" field  **/
+
+/* Request body */
 {
     "filter": {
         "category": {
@@ -224,12 +192,13 @@ Feel free to use the [MongoDB Documentation](https://docs.mongodb.com/manual/ref
 }
 ```
 
+Feel free to use the [MongoDB Documentation](https://docs.mongodb.com/manual/reference/) for any help.
 
-### < GET Request >
+### GET Request
 
 Fetch all the documents for a given resource
 
-* *Pattern* : `/{database}[/{collection}[/{id}]]`
+* *Pattern* : `/{database:[a-z0-9_]+}[/{collection:[a-z0-9_]+}[/{id:[a-z0-9]+}]]`
 * The request body IS NOT used
 
 ##### *Examples*
@@ -242,7 +211,7 @@ Fetch all the documents for a given resource
     "count": 5
     "collections": [
         {
-            "collectionName": "characters",
+            "name": "characters",
             "count": 3,
             "data": [
                 {
@@ -250,26 +219,26 @@ Fetch all the documents for a given resource
                         "oid": // Already auto-generated unique id
                     },
                     "name": "Toto",
-                    "class": "troll"
+                    "race": "troll"
                 },
                 {
                     "_id": {
                         "oid": // Already auto-generated unique id
                     },
                     "name": "Tata",
-                    "class": "elfe"
+                    "race": "elfe"
                 },
                 {
                     "_id": {
                         "oid": // Already auto-generated unique id
                     },
                     "name": "Titi",
-                    "class": "elfe"
+                    "race": "elfe"
                 }
             ]
         },
         {
-            "collectionName": "trees",
+            "name": "trees",
             "count": 2,
             "data": [
                 {
@@ -298,15 +267,15 @@ Fetch all the documents for a given resource
     "count": 2
     "data": [
         {
-            "_id": [
+            "_id": {
                 "oid": // Already auto-generated unique id
-            ]
+            },
             "name": "apple",
         },
         {
-            "_id": [
+            "_id": {
                 "oid": // Already auto-generated unique id
-            ]
+            },
             "name": "cedar",
         }
     ]
@@ -326,3 +295,51 @@ Fetch all the documents for a given resource
     }
 }
 ```
+
+### PUT Request
+
+PUT requests are used to replace a document or a collection of documents.  
+Therefore, the API expects the client to send the whole representation of the resource.
+
+Note that the response for a PUT request has no body.
+
+*Pattern* : `/{database:[a-z0-9_]+}/{collection[a-z0-9_]+}/{id:[a-z0-9]+}`
+
+#### *Examples*
+
+```javascript
+/** PUT /forest/animals/s0m3un1qu31d  **/
+
+/* Request body */
+{
+    "data": {
+        "name": "Long",
+        "race": "tiger"
+    }
+}
+```
+
+If the id doesn't exist, no action will be done and you'll get an error.
+
+
+```javascript
+/** PUT /forest/animals  **/
+
+/* Request body */
+{
+    "data": [
+        {
+            "_id": "s0m3un1qu31d"
+            "name": "Long",
+            "race": "tiger"
+        },
+        {
+            "_id": "an0th3run1qu31d"
+            "name": "Bakuryu",
+            "race": "mole"
+        },
+    ]
+}
+```
+
+Note : Any document with a non-existing id will be ignored without breaking the queue process.
