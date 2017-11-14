@@ -2,9 +2,10 @@
 namespace MykeOn\Controller\Http;
 
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\UriInterface;
+use Psr\Cache\CacheInterface;
 use Slim\Http\Request;
 use Slim\Http\Response;
-use Psr\Http\Message\UriInterface;
 use MykeOn\Controller\Controller;
 
 /**
@@ -31,6 +32,27 @@ abstract class HttpController extends Controller
      * @var \MongoDB\Collection
      */
     protected $collection;
+
+    /**
+     * @var CacheInterface
+     */
+    protected $cache;
+
+    /**
+     * @var string
+     */
+    protected $cacheKey;
+
+    /* -------------------- */
+
+    /**
+     * @param ContainerInterface $container [description]
+     */
+    public function __construct(ContainerInterface $container)
+    {
+        parent::__construct($container);
+        $this->cache = $container['cache'];
+    }
 
     /* -------------------- */
 
