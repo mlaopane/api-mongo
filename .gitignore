@@ -1,4 +1,4 @@
-vendor/
-tests/
-.idea/
-cache/
+/vendor/
+/tests/
+/.idea/
+/cache/
