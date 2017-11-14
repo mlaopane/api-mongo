@@ -18,15 +18,17 @@ class GetController extends HttpController
      */
     public function handleDatabaseRequest(Request $request, Response $response, array $arguments): Response
     {
-        $responseBody = [
-            'databaseName' => $this->databaseName,
-            'collections'  => $this->get('db_manager')->fetchDatabaseData($this->database),
-        ];
+        if ($this->cache->has($this->cacheKey)) {
+            return $response->withJson($this->cache->get($this->cacheKey), 200);
+        }
 
         if (empty($responseBody['collections'])) {
             $response->withStatus(200, 'No data found');
         }
-        return $response->withJson($responseBody, 200);
+
+        return $response->withJson([
+            'collections'  => $this->get('db_manager')->fetchDatabase($this->database),
+        ], 200);
     }
 
     /**
@@ -40,11 +42,6 @@ class GetController extends HttpController
      */
     public function handleCollectionRequest(Request $request, Response $response, array $args): Response
     {
-        $responseBody = [
-            'databaseName' => $this->databaseName,
-            'collectionName' => $this->collectionName,
-        ];
-
         // Get a document by its id
         if (!empty($args["id"])) {
             $responseBody['data'] = $this->collection->findOne(['_id' => new ObjectId($args["id"])]);
