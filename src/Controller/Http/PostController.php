@@ -7,9 +7,8 @@ use MongoDB\BSON\ObjectId;
 
 class PostController extends HttpController
 {
-    use NoFilterTrait;
-
     /**
+     * handle a POST request for creating documents on a given database
      *
      * @param  Request  $request
      * @param  Response $response
@@ -19,13 +18,12 @@ class PostController extends HttpController
      */
     public function handleDatabaseRequest(Request $request, Response $response, array $arguments): Response
     {
+        /* NOT ALLOWED */
         return null;
     }
 
     /**
-     * handle a POST request for :
-     * - creating documents
-     * - updating documents by filter
+     * handle a POST request for creating documents on a given collection
      *
      * @param  Request  $request
      * @param  Response $response
@@ -41,14 +39,11 @@ class PostController extends HttpController
             return $response->withStatus(400, "Missing data in the request body");
 
         // CREATE one or many documents
-        } elseif (empty($requestBody['filter'])) {
-            return empty($requestBody['data'][0]) ?
+        } else {
+            return
+                empty($requestBody['data'][0]) ?
                 $this->insertOneWithResponse($response, $requestBody['data']) :
                 $this->insertManyWithResponse($response, $requestBody['data']);
-
-        // UPDATE one or many documents by filter
-        } else {
-            return $this->updateManyWithResponse($response, $body['filter'], $body['data']);
         }
     }
 
@@ -74,10 +69,8 @@ class PostController extends HttpController
         return $response
             ->withStatus(201, "Created")
             ->withJson([
-                'databaseName'   => $this->databaseName,
-                'collectionName' => $this->collectionName,
-                'count'          => count($documents),
-                'data'           => $documents,
+                'count' => count($documents),
+                'data'  => $documents,
             ]);
     }
 
@@ -90,9 +83,9 @@ class PostController extends HttpController
     protected function insertOneWithResponse(Response $response, array $document = []): Response
     {
         // Prevent the client to insert a custom id
-        if (isset($document['_id'])) {
-            unset($document['_id']);
-        }
+        // if (isset($document['_id'])) {
+        //     unset($document['_id']);
+        // }
 
         $result = $this->collection->insertOne($document);
         $insertedId = $result->getInsertedId();
@@ -106,30 +99,8 @@ class PostController extends HttpController
                 'id'         => $insertedId,
             ]))
             ->withJson([
-                'databaseName'   => $this->databaseName,
-                'collectionName' => $this->collectionName,
-                'data'           => $document
+                'data' => $document
             ]);
     }
 
-    /**
-     * @param  Response $response
-     * @param  array    $filter
-     * @param  array    $data
-     *
-     * @return Response
-     */
-    protected function updateManyWithResponse(Response $response, array $filter, array $data = []): Response
-    {
-        $result = $this->collection->updateMany($filter, ['$set' => $data]);
-        $body = [
-            "matched" => $result->getMatchedCount(),
-            "modified" => $result->getModifiedCount(),
-        ];
-        if ($body['matched'] == 0) {
-            return $response->withStatus(200, "No Match")->withJson($body);
-        } else {
-            return $response->withStatus(200, "Modified")->withJson($body);
-        }
-    }
 }
