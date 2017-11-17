@@ -1,5 +1,5 @@
 <?php
-namespace MykeOn\Test;
+namespace MykeOn\Service\Test;
 
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Client;
@@ -8,7 +8,11 @@ use MykeOn\Container;
 
 class WebTestCase extends TestCase
 {
-    protected static function createClient($base_uri = 'http://localhost:8000')
+    /**
+     * @param  string $base_uri
+     * @return Client
+     */
+    protected static function createClient($base_uri = 'http://localhost:8000'): Client
     {
         return new Client([
             'base_uri' => $base_uri,
