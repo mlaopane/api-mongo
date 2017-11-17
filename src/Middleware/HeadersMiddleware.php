@@ -1,7 +1,7 @@
 <?php
 namespace MykeOn\Middleware;
 
-class AccessControlMiddleware
+class HeadersMiddleware
 {
     private $allowedHeaders = [
         'X-Requested-With',
