@@ -7,12 +7,15 @@ use Psr\Cache\CacheInterface;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use MykeOn\Controller\Controller;
+use MykeOn\Controller\Http\ErrorResponseTrait;
 
 /**
  *
  */
 abstract class HttpController extends Controller
 {
+    use ErrorResponseTrait;
+    
     /**
      * @var string
      */
@@ -92,9 +95,11 @@ abstract class HttpController extends Controller
     }
 
     /**
-     * Initialize $this->collectionName and $this->collection
+     * Initialize the current collection
+     *
      * @param  array $arguments
-     * @return this
+     *
+     * @return self
      */
     protected function setCollectionData(array $arguments)
     {
