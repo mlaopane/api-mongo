@@ -7,27 +7,14 @@ use Psr\Container\ContainerInterface;
 
 class DatabaseManager
 {
-    public function fetchData($base, array $filter = [])
-    {
-        if ($base instanceof Database) {
-            return $this->fetchDatabaseData($base, $filter);
-        }
-        if ($base instanceof Collection) {
-            return $this->fetchCollectionData($base, $filter);
-        }
-        $baseType = gettype($base);
-        $given = $baseType === 'object' ? get_class($base) : $baseType;
-        $expected = Database::class." or ".Collection::class;
-        $message = "Expected base argument to be an instance of \"".$expected."\". ".$given." given !";
-        throw new \InvalidArgumentException($message);
-    }
-
     /**
      * Fetch all the documents from the provided database
+     *
      * @param  Database $database
+     *
      * @return array
      */
-    public function fetchDatabaseData(Database $database, array $filter = []): array
+    public function fetchDatabase(Database $database, array $filter = []): array
     {
         $collectionIterator = $database->listCollections();
         $collectionIterator->rewind();
@@ -47,5 +34,56 @@ class DatabaseManager
         }
 
         return $collections;
+    }
+
+    /**
+     * [insertCollections description]
+     * @param  Database $database    [description]
+     * @param  array    $collections [description]
+     * @return array                 [description]
+     */
+    public function insertMany(string $collectionName, array $documents): array
+    {
+        $result = $database->selectCollection($collectionName)->insertMany($documents);
+
+        $responseBody['count'] = $result->getInsertedCount();
+        $responseBody['ids'] = $result->getInsertedIds();
+
+        return $responseBody;
+    }
+
+    /**
+     *
+     * @param  Database $database    [description]
+     * @param  array    $collections [description]
+     * @return array                 [description]
+     */
+    public function upsertCollections(Database $database, array $collections): array
+    {
+        $responseBody['collections'] = ['count' => 0];
+
+        foreach ($collections as $collection) {
+            $collectionCount = 0;
+            $insertedIds = [];
+            foreach ($collection['data'] as $document) {
+                $result = $database->selectCollection($collection['name'])->updateOne(
+                    $document,
+                    ['$set' => $document],
+                    ['upsert' => $collection['upsert']]
+                );
+                if ($result->getUpsertedCount()) {
+                    $collectionCount += 1;
+                    $insertedIds[] = $result->getUpsertedId();
+                }
+            }
+            $responseBody['collections']['count'] += $collectionCount;
+            $responseBody['collections']['data'][] = [
+                'name'  => $collection['name'],
+                'count' => $collectionCount,
+                'ids'   => $insertedIds,
+            ];
+        }
+
+        return $responseBody;
     }
 }
