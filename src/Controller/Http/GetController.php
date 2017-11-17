@@ -22,12 +22,12 @@ class GetController extends HttpController
             return $response->withJson($this->cache->get($this->cacheKey), 200);
         }
 
-        if (empty($responseBody['collections'])) {
-            $response->withStatus(200, 'No data found');
+        if (empty($collections = $this->get('db_manager')->fetchDatabase($this->database))) {
+            return $response->withStatus(204, 'No data found');
         }
 
         return $response->withJson([
-            'collections'  => $this->get('db_manager')->fetchDatabase($this->database),
+            'collections' => $collections,
         ], 200);
     }
 
@@ -49,9 +49,8 @@ class GetController extends HttpController
         } else {
             $responseBody['data'] = $this->collection->find()->toArray();
         }
-
         if (empty($responseBody['data'])) {
-            $response->withStatus(200, 'No data found');
+            return $response->withStatus(204, 'No data found');
         }
         return $response->withJson($responseBody);
     }
