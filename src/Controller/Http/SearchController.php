@@ -6,15 +6,8 @@ use Slim\Http\Response;
 
 class SearchController extends HttpController
 {
-    use NoFilterTrait;
-
     /**
-     *
-     * @param  Request  $request
-     * @param  Response $response
-     * @param  array    $arguments
-     *
-     * @return Response
+     * {@inheritdoc}
      */
     public function handleDatabaseRequest(Request $request, Response $response, array $arguments): Response
     {
@@ -22,7 +15,7 @@ class SearchController extends HttpController
 
         // No filter provided
         if (empty($requestBody['filter'])) {
-            return $this->noFilterResponse($requestBody, $response);
+            return $this->noFilterProvidedResponse($response, $requestBody);
         }
 
         return $response->withJson([
@@ -31,12 +24,7 @@ class SearchController extends HttpController
     }
 
     /**
-     *
-     * @param  Request  $request   [description]
-     * @param  Response $response  [description]
-     * @param  array    $arguments [description]
-     *
-     * @return Response            [description]
+     * {@inheritdoc}
      */
     public function handleCollectionRequest(Request $request, Response $response, array $arguments): Response
     {
@@ -44,11 +32,16 @@ class SearchController extends HttpController
 
         // No filter provided
         if (empty($requestBody['filter'])) {
-            return $this->noFilterResponse($requestBody, $response);
+            return $this->noFilterProvidedResponse($response, $requestBody);
+        }
+
+        // No data found
+        if (empty($data = $this->collection->find($requestBody['filter'])->toArray())) {
+            return $response->withStatus(204, 'No data found');
         }
 
         return $response->withJson([
-            'data' => $this->collection->find($requestBody['filter'])->toArray(),
+            'data' => $data,
         ]);
     }
 }
