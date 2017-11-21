@@ -5,24 +5,27 @@ use Psr\SimpleCache\CacheInterface;
 use Slim\Http\{Request, Response};
 use MykeOn\Helper\String\CacheKey;
 
-class CacheRequestMiddleware extends CacheMiddleware
+class CacheRequestMiddleware extends CacheMiddleware implements CacheRequestInterface
 {
     public function __construct(CacheInterface $cache)
     {
+        // Sets the current cache subdirectory
         parent::__construct($cache, 'request');
     }
 
+    public function __invoke(Request $request, Response $response, $next)
+    {
+        $verb = mb_strtolower($request->getMethod(), 'UTF-8');
+        $method = 'on'.ucfirst($verb).'Request';
+        if (method_exists($this, $method)) {
+            return $this->$method($request, $response, $next);
+        }
+    }
+
     /**
-     * Executre cache instructions on a GET request
-     *
-     * @param  CacheKey  $cacheKey
-     * @param  Request   $request
-     * @param  Response  $response
-     * @param  callable  $next
-     *
-     * @return Response
+     * {@inheritDoc}
      */
-    protected function onGetRequest(Request $request, Response $response, callable $next)
+    public function onGetRequest(Request $request, Response $response, callable $next): Response
     {
         $cacheKey = (new CacheKey())->useRequest($request);
         // Get the data from the cache
@@ -40,61 +43,83 @@ class CacheRequestMiddleware extends CacheMiddleware
     }
 
     /**
-     * @param  Request  $request
-     * @param  Response $response
-     * @param  callable $next
-     *
-     * @return Response
+     * {@inheritDoc}
      */
-    protected function onPostRequest(Request $request, Response $response, callable $next)
+    public function onPostRequest(Request $request, Response $response, callable $next): Response
     {
         $response = $next($request, $response);
 
+        /* No cache control on SEARCH request */
         if (!$this->isSearchRequest($request)) {
-            $statusCode = (string) $response->getStatusCode();
-            // Clear the cache if the status is OK
-            if ($statusCode[0] === '2') {
+            /* Cache Control */
+            $statusCode = (int) $response->getStatusCode();
+            if ($statusCode === 201) { // CREATION
                 $this->cache->clear();
             }
-        }
-
-        return $response;
-    }
-
-    protected function onPutRequest(Request $request, Response $response, callable $next)
-    {
-        $response = $next($request, $response);
-
-        // Clear the cache if the document has been successfully replaced
-        if ($response->getStatusCode() == 200) {
-            $this->cache->clear();
-        }
-
-        return $response;
-    }
-
-    protected function onPatchRequest(Request $request, Response $response, callable $next)
-    {
-        $response = $next($request, $response);
-
-        return $response;
-    }
-
-    protected function onDeleteRequest(Request $request, Response $response, callable $next)
-    {
-        $response = $next($request, $response);
-        $cacheKey = (new CacheKey())->useRequest($request);
-        $keys = $this->cache->getKeys($cacheKey->__toString());
-
-        if ($response->getStatusCode() == 200) {
-            $this->cache->deleteMultiple($keys);
+            /* ----- */
         }
 
         return $response;
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function onPutRequest(Request $request, Response $response, callable $next): Response
+    {
+        $response = $next($request, $response);
+
+        /* Cache Control */
+        $statusCode = (int) $response->getStatusCode();
+        if ($statusCode == 201 || $statusCode == 200) { // REPLACE (or CREATE)
+            $this->cache->clear();
+        }
+        /* ----- */
+
+        return $response;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function onPatchRequest(Request $request, Response $response, callable $next): Response
+    {
+        $response = $next($request, $response);
+
+        /* Cache Control */
+        $statusCode = (int) $response->getStatusCode();
+        if ($statusCode == 200) {
+            $cacheKey = (new CacheKey())->useRequest($request);
+            $keys = $this->cache->getKeys($cacheKey);
+            $this->cache->delete((string) $cacheKey);
+        }
+        /* ----- */
+
+        return $response;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function onDeleteRequest(Request $request, Response $response, callable $next): Response
+    {
+        $response = $next($request, $response);
+
+        /* Cache Control */
+        $statusCode = (int) $response->getStatusCode();
+        if ($statusCode == 200) {
+            $cacheKey = (new CacheKey())->useRequest($request);
+            $keys = $this->cache->getKeys($cacheKey);
+            $this->cache->deleteMultiple($keys);
+        }
+        /* ----- */
+
+        return $response;
+    }
+
+    /**
      * @param  Request $request
+     *
      * @return bool
      */
     protected function isSearchRequest(Request $request): bool
