@@ -69,14 +69,19 @@ class PatchController extends HttpController
     protected function updateWithResponse(Response $response, array $data, array $filter, $action): Response
     {
         $result = $this->collection->updateMany($filter, [$action => $data]);
-        $body = [
-            "matched"  => $result->getMatchedCount(),
-            "modified" => $result->getModifiedCount(),
-        ];
-        if ($body['matched'] == 0) {
+        $matched = $result->getMatchedCount();
+        $modified = $result->getModifiedCount();
+
+        if ($matched === 0) {
             return $response->withStatus(204, "No Match");
+        } elseif ($modified === 0) {
+            return $response->withStatus(204, "No modification");
         } else {
-            return $response->withStatus(200, "Modified")->withJson($body);
+            return $response->withStatus(200, "Modified")->withJson([
+                'message' => 'Modification done',
+                'matched' => $matched,
+                'modified' => $modified,
+            ]);
         }
     }
 }

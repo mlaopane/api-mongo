@@ -20,7 +20,8 @@ class DeleteController extends HttpController
 
         // Drop database if no filter
         if (empty($filter)) {
-            return $response->withStatus(200, 'Deleted')->withJson($this->database->drop());
+
+            return $response->withStatus(200, 'Deleted')->withJson($this->database->drop())-
         // Drop collections by filter
         } else {
             return $this->deleteCollectionsWithResponse($response, $filter);
