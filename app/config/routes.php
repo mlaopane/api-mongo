@@ -16,9 +16,7 @@ use MykeOn\Middleware\{
 /* -------------------- */
 
 $app
-->add(new CacheRequestMiddleware($container['cache']))
-->add(new HeadersMiddleware())
-;
+    ->add(new HeadersMiddleware());
 
 /** Requests uri MUST provide the database **/
 $app->group("/{database:[a-z0-9]+}", function () {
@@ -47,4 +45,4 @@ $app->group("/{database:[a-z0-9]+}", function () {
     /** DELETE request */
     $this->delete("[/{collection:[a-z0-9]+}[/{id:[a-z0-9]+}]]", DeleteController::class.":handleRequest")->setName('delete');
 
-});
+})->add(new CacheRequestMiddleware($container['cache']));
