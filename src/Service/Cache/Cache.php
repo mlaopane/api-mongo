@@ -73,6 +73,11 @@ class Cache implements CacheInterface
         return count($dirIterator) === 0;
     }
 
+    /**
+     * [getKeys description]
+     * @param  string $prefix [description]
+     * @return [type]         [description]
+     */
     public function getKeys($prefix = '')
     {
         $dirIterator = new \DirectoryIterator($this->directoryPath);
@@ -80,7 +85,7 @@ class Cache implements CacheInterface
 
         foreach ($dirIterator as $key => $file) {
             $filename = new StringObject($file->getFilename());
-            if (!$file->isDot() && $filename->startWith($prefix)) {
+            if (!$file->isDot() && $filename->startWith((string) $prefix)) {
                 $keys[] = $filename->getString();
             }
         }
