@@ -89,7 +89,7 @@ class PostController extends HttpController
 
         $result = $this->collection->insertOne($document);
         $insertedId = $result->getInsertedId();
-        $document['id'] = $insertedId;
+        $document['_id'] = $insertedId;
 
         return $response
             ->withStatus(201, "Created")
