@@ -88,10 +88,10 @@ class CacheRequestMiddleware extends CacheMiddleware implements CacheRequestInte
 
         /* Cache Control */
         $statusCode = (int) $response->getStatusCode();
-        if ($statusCode == 200) {
+        if ($statusCode === 200) {
             $cacheKey = (new CacheKey())->useRequest($request);
             $keys = $this->cache->getKeys($cacheKey);
-            $this->cache->delete((string) $cacheKey);
+            $this->cache->deleteMultiple($keys);
         }
         /* ----- */
 

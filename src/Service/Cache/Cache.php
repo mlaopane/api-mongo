@@ -75,11 +75,13 @@ class Cache implements CacheInterface
 
     /**
      * [getKeys description]
-     * @param  string $prefix [description]
-     * @return [type]         [description]
+     * @param  string $key [description]
+     * @return [type]      [description]
      */
-    public function getKeys($prefix = '')
+    public function getKeys($key = '')
     {
+        [$database, $collection] = explode('_', $key);
+        $prefix = "{$database}_{$collection}";
         $dirIterator = new \DirectoryIterator($this->directoryPath);
         $keys = [];
 

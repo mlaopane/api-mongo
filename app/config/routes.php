@@ -15,8 +15,7 @@ use MykeOn\Middleware\{
 
 /* -------------------- */
 
-$app
-    ->add(new HeadersMiddleware());
+$app->add(new HeadersMiddleware());
 
 /** Requests uri MUST provide the database **/
 $app->group("/{database:[a-z0-9]+}", function () {

@@ -21,7 +21,7 @@ class StringObject
     public function startWith(string $needle): bool
     {
         $length = strlen($needle);
-        return (substr($this->string, 0, $length) === $needle);
+        return substr($this->string, 0, $length) === $needle;
     }
 
     /**
@@ -32,7 +32,7 @@ class StringObject
     function endsWith(string $needle): bool
     {
         $length = strlen($needle);
-        return $length === 0 || (substr($this->string, -$length) === $needle);
+        return $length === 0 || substr($this->string, -$length) === $needle;
     }
 
     /**

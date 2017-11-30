@@ -4,6 +4,7 @@ namespace MykeOn\Controller\Http;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Driver\Exception\InvalidArgumentException;
 
 class SearchController extends HttpController
 {
@@ -29,48 +30,49 @@ class SearchController extends HttpController
      */
     public function handleCollectionRequest(Request $request, Response $response, array $arguments): Response
     {
-        $requestBody = $request->getParsedBody();
+        extract($request->getParsedBody()); // filter
 
         // No filter provided
-        if (empty($requestBody['filter'])) {
-            return $this->noFilterProvidedResponse($response, $requestBody);
+        if (empty($filter)) {
+            return $this->noFilterProvidedResponse($response, ['filter' => $filter]);
         }
 
-        if (!empty($requestBody['filter']['id'])) {
-            $id = $requestBody['filter']['id'];
-            $requestBody['filter'] = $this->createIdFilter($id);
-            if (null === $requestBody['filter']) {
-              return $response
-                ->withStatus(400, 'Bad Request')
-                ->withJson(['error' => 'id should be a string or an array of strings']);
+        // Filter by id
+        if (!empty($filter['id'])) {
+            $filter = $this->createIdFilter($filter['id']);
+            if (null === $filter) {
+                return $response
+                    ->withStatus(400, 'Bad Request')
+                    ->withJson(['error' => 'id should be a string or an array of strings']);
             }
         }
 
         // No data found
-        if (empty($data = $this->collection->find($requestBody['filter'])->toArray())) {
-            return $response
-                ->withStatus(200, 'No data found')
-                ->withJson(['data' => []]);
+        if (empty($data = $this->collection->find($filter)->toArray())) {
+            return $response->withStatus(204, 'No data found');
         }
 
-        return $response->withJson([
-            'data' => $data,
-        ]);
+        return $response->withJson(['data' => $data]);
     }
 
-    public function createIdFilter($id)
+    /**
+     * @param string $idParam
+     * @return array|null
+     */
+    public function createIdFilter($idParam)
     {
-      if (is_string($id)) {
-          return ['_id' => new ObjectId($id)];
-      }
-      if (is_array($id)) {
-          return [
-              '_id' => [
-                  '$in' => array_map(function ($id) {
-                      return new ObjectId($id);
-                  }, $id)
-              ]
-          ];
+        if (is_string($idParam)) {
+            return ['_id' => new ObjectId($idParam)];
+        }
+        if (is_array($idParam)) {
+            $ids = array_map(function ($id) {
+                return new ObjectId($id);
+            }, $idParam);
+            return [
+                '_id' => [
+                    '$in' => $ids
+               ]
+            ];
       }
       return null;
     }

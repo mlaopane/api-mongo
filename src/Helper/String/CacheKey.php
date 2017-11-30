@@ -28,7 +28,12 @@ class CacheKey extends StringObject
     public function useRequest(Request $request)
     {
         // Set the key using the URI's path as base
-        $this->string = str_replace('/', $this->keyDelimiter, substr($request->getUri()->getPath(), 1));
+        $this->string = str_replace(
+            '/',
+            $this->keyDelimiter,
+            substr($request->getUri()->getPath(), 1)
+        );
+        $this->string = preg_replace('/__[a-z]+/', '', $this->string);
 
         return $this;
     }

@@ -36,6 +36,7 @@ abstract class Controller
     /**
      * Get a service from the container
      * @param string $key
+     * @return null
      */
     public function get(string $key)
     {
