@@ -3,8 +3,6 @@
 namespace MykeOn\Controller;
 
 use Psr\Container\ContainerInterface;
-use MongoDB\Client;
-use MongoDB\Database;
 
 /**
  *
@@ -18,19 +16,12 @@ abstract class Controller
     private $container;
 
     /**
-     * @var Database
-     */
-    protected $database;
-
-    /**
      *
      * @param ContainerInterface $container
      */
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        $client = new Client();
-        $this->database = $client->selectDatabase('cvtheque');
     }
 
     /**
@@ -44,10 +35,5 @@ abstract class Controller
             return $this->container->get($key);
         }
         return null;
-    }
-
-    public function getDatabase()
-    {
-        return $this->database;
     }
 }

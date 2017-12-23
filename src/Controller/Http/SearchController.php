@@ -49,10 +49,12 @@ class SearchController extends HttpController
 
         // No data found
         if (empty($data = $this->collection->find($filter)->toArray())) {
-            return $response->withStatus(204, 'No data found');
+            return $response
+                ->withStatus(200, 'No data found')
+                ->withJson([$this->collectionName => []]);
         }
 
-        return $response->withJson(['data' => $data]);
+        return $response->withJson([$this->collectionName => $data]);
     }
 
     /**

@@ -19,7 +19,8 @@ class GetController extends HttpController
 
         if (empty($collections = $this->get('db_manager')->fetchDatabase($this->database))) {
             return $response
-                ->withStatus(204, 'No data found');
+                ->withStatus(200, 'No data found')
+                ->withJson(['collections' => []]);
         }
 
         return $response->withJson(['collections' => $collections], 200);
@@ -32,14 +33,16 @@ class GetController extends HttpController
     {
         // Get a document by its id
         if (!empty($arguments["id"])) {
-            $content['data'] = $this->collection->findOne(['_id' => new ObjectId($arguments["id"])]);
+            $content[$this->collectionName] = $this->collection->findOne(['_id' => new ObjectId($arguments["id"])]);
         // Get one or many documents
         } else {
-            $content['data'] = $this->collection->find()->toArray();
+            $content[$this->collectionName] = $this->collection->find()->toArray();
         }
 
-        if (empty($content['data'])) {
-            return $response->withStatus(200, 'No data found');
+        if (empty($content[$this->collectionName])) {
+            return $response
+                ->withStatus(200, 'No data found')
+                ->withJson([$this->collectionName => []]);
         }
         return $response->withJson($content);
     }

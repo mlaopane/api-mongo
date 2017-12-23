@@ -8,6 +8,9 @@ use Slim\Http\Request;
 use Slim\Http\Response;
 use MykeOn\Controller\Controller;
 use MykeOn\Controller\Http\ErrorResponseTrait;
+use MongoDB\Client;
+use MongoDB\Database;
+
 
 /**
  *
@@ -54,6 +57,7 @@ abstract class HttpController extends Controller
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
+        $this->client = new Client($container['db']->getUri());
         $this->cache = $container['cache'];
     }
 
@@ -87,9 +91,8 @@ abstract class HttpController extends Controller
      */
     protected function setDatabaseData(array $arguments)
     {
-        $client = new \MongoDB\Client;
         $this->databaseName = $arguments['database'];
-        $this->database = $client->selectDatabase($arguments['database']);
+        $this->database = $this->client->selectDatabase($arguments['database']);
 
         return $this;
     }
