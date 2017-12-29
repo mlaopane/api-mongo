@@ -3,7 +3,6 @@ namespace MykeOn\Controller\Http;
 
 use Slim\Http\Request;
 use Slim\Http\Response;
-use MongoDB\BSON\ObjectId;
 
 class PatchController extends HttpController
 {
@@ -52,7 +51,7 @@ class PatchController extends HttpController
 
         // UPDATE by id if provided or by filter if provided
         if (!empty($id)) {
-            return $this->updateWithResponse($response, $data, ['_id' => new ObjectId($id)], $this->actions[$action]);
+            return $this->updateWithResponse($response, $data, ['_id' => $id], $this->actions[$action]);
         } else {
             return $this->updateWithResponse($response, $data, $requestBody['filter'] ?? [], $this->actions[$action]);
         }

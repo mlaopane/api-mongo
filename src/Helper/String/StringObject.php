@@ -6,7 +6,7 @@ class StringObject
     /**
      * @var string
      */
-    private $string;
+    protected $string;
     
     public function __construct(string $string = '')
     {

@@ -49,15 +49,14 @@ class CacheRequestMiddleware extends CacheMiddleware implements CacheRequestInte
     {
         $response = $next($request, $response);
 
-        /* No cache control on SEARCH request */
+        /* Clear the cache if the SEARCH request was successful */
         if (!$this->isSearchRequest($request)) {
-            /* Cache Control */
             $statusCode = (int) $response->getStatusCode();
             if ($statusCode === 201) { // CREATION
                 $this->cache->clear();
             }
-            /* ----- */
         }
+        /* ----- */
 
         return $response;
     }
@@ -69,7 +68,7 @@ class CacheRequestMiddleware extends CacheMiddleware implements CacheRequestInte
     {
         $response = $next($request, $response);
 
-        /* Cache Control */
+        /* Invalidate the cache if the PUT request was successful */
         $statusCode = (int) $response->getStatusCode();
         if ($statusCode == 201 || $statusCode == 200) { // REPLACE (or CREATE)
             $this->cache->clear();
@@ -86,7 +85,7 @@ class CacheRequestMiddleware extends CacheMiddleware implements CacheRequestInte
     {
         $response = $next($request, $response);
 
-        /* Cache Control */
+        /* Invalidate the cache if the PATCH request was successful */
         $statusCode = (int) $response->getStatusCode();
         if ($statusCode === 200) {
             $cacheKey = (new CacheKey())->useRequest($request);
@@ -105,9 +104,9 @@ class CacheRequestMiddleware extends CacheMiddleware implements CacheRequestInte
     {
         $response = $next($request, $response);
 
-        /* Cache Control */
+        /* Invalidate the cache if the DELETE request was successful */
         $statusCode = (int) $response->getStatusCode();
-        if ($statusCode == 200) {
+        if ($statusCode >= 200 && $statusCode < 300) {
             $cacheKey = (new CacheKey())->useRequest($request);
             $keys = $this->cache->getKeys($cacheKey);
             $this->cache->deleteMultiple($keys);

@@ -3,7 +3,6 @@ namespace MykeOn\Controller\Http;
 
 use Slim\Http\Request;
 use Slim\Http\Response;
-use MongoDB\BSON\ObjectId;
 use MongoDB\DeleteResult;
 use MongoDB\Driver\Exception\BulkWriteException;
 
@@ -36,8 +35,8 @@ class DeleteController extends HttpController
      */
     public function handleCollectionRequest(Request $request, Response $response, array $arguments): Response
     {
-        extract($arguments); // id
-        extract($request->getParsedBody());
+        extract($arguments); // $id
+        extract($request->getParsedBody()); // $filter
 
         // Delete one document if the ID is provided
         if (!empty($id)) {
@@ -89,18 +88,19 @@ class DeleteController extends HttpController
     protected function deleteOneWithResponse(Response $response, string $id): Response
     {
         try {
-            $result = $this->collection->deleteOne(["_id" => new ObjectId($id)]);
+            $result = $this->collection->deleteOne(["_id" => $id]);
         } catch (BulkWriteException $e) {
             return $response->withStatus(400, 'Bad request')->withJson(['error' => $e->getMessage()]);
         }
         //
         if (!$result->isAcknowledged()) {
-            return $response->withStatus(500);
+            return $response
+                ->withStatus(500, 'Not acknowledged')
+                ->withJson(['error' => 'The server didn\'t acknowledged the DELETE request']);
         //
         } elseif ($result->getDeletedCount() === 0) {
             return $response
-            ->withStatus(404, 'Not found')
-            ->withJson(['error' => 'The resource doesn\'t exists']);
+                ->withStatus(404, 'Not found');
         }
 
         return $response->withStatus(204, 'Deleted');

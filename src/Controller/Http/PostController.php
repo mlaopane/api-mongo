@@ -3,7 +3,6 @@ namespace MykeOn\Controller\Http;
 
 use Slim\Http\Request;
 use Slim\Http\Response;
-use MongoDB\BSON\ObjectId;
 
 class PostController extends HttpController
 {
@@ -82,11 +81,6 @@ class PostController extends HttpController
      */
     protected function insertOneWithResponse(Response $response, array $document = []): Response
     {
-        // Prevent the client to insert a custom id
-        // if (isset($document['_id'])) {
-        //     unset($document['_id']);
-        // }
-
         $result = $this->collection->insertOne($document);
         $insertedId = $result->getInsertedId();
         $document['_id'] = $insertedId;

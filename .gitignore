@@ -3,3 +3,4 @@ tests/
 .idea/
 cache/
 /npm-debug.log
+app/config/database.yml

@@ -33,16 +33,15 @@ class GetController extends HttpController
     {
         // Get a document by its id
         if (!empty($arguments["id"])) {
-            $content[$this->collectionName] = $this->collection->findOne(['_id' => new ObjectId($arguments["id"])]);
+            $content = $this->collection->findOne(['_id' => $arguments["id"]]);
         // Get one or many documents
         } else {
-            $content[$this->collectionName] = $this->collection->find()->toArray();
+            $content = $this->collection->find()->toArray();
         }
-
-        if (empty($content[$this->collectionName])) {
-            return $response
-                ->withStatus(200, 'No data found')
-                ->withJson([$this->collectionName => []]);
+        //
+        if (empty($content)) {
+            $response = $response->withStatus(200, 'No data found');
+            $content = [];
         }
         return $response->withJson($content);
     }

@@ -8,7 +8,7 @@ class HeadersMiddleware
         'Content-Type',
         'Accept',
         'Origin',
-        'Authorization'
+        'Authorization',
     ];
 
     private $allowedMethods = [

@@ -60,6 +60,9 @@ class Cache implements CacheInterface
         }
     }
 
+    /**
+     * Clear the cache for a given sub-directory
+     */
     public function clear()
     {
         $dirIterator = new \DirectoryIterator($this->directoryPath);
@@ -70,22 +73,25 @@ class Cache implements CacheInterface
             }
         }
 
-        return count($dirIterator) === 0;
+        return $dirIterator->getSize() === 0;
     }
 
     /**
-     * [getKeys description]
-     * @param  string $key [description]
-     * @return [type]      [description]
+     * Returns the keys for a given cache filename
+     * 
+     * @param  string $key format : <database>_<collection>
+     * @return array
      */
     public function getKeys($key = '')
     {
         [$database, $collection] = explode('_', $key);
         $prefix = "{$database}_{$collection}";
+
         $dirIterator = new \DirectoryIterator($this->directoryPath);
         $keys = [];
 
-        foreach ($dirIterator as $key => $file) {
+        /* Remove the cache files starting with the prefix */
+        foreach ($dirIterator as $file) {
             $filename = new StringObject($file->getFilename());
             if (!$file->isDot() && $filename->startWith((string) $prefix)) {
                 $keys[] = $filename->getString();
@@ -97,14 +103,15 @@ class Cache implements CacheInterface
 
     public function getMultiple($keys, $default = null)
     {
-
     }
 
     public function setMultiple($values, $ttl = null)
     {
-
     }
 
+    /**
+     * @param array $keys
+     */
     public function deleteMultiple($keys)
     {
         $dirIterator = new \DirectoryIterator($this->directoryPath);
@@ -114,6 +121,8 @@ class Cache implements CacheInterface
                 unlink($file->getPathname());
             }
         }
+
+        return true;
     }
 
     public function has($key)

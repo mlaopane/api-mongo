@@ -14,11 +14,6 @@ class CacheKey extends StringObject
      */
     private $keyDelimiter = '_';
 
-    /**
-     * @var string
-     */
-    private $string;
-
     /* -------------------- */
 
     /**

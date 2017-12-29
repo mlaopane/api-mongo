@@ -3,7 +3,6 @@ namespace MykeOn\Controller\Http;
 
 use Slim\Http\Request;
 use Slim\Http\Response;
-use MongoDB\BSON\ObjectId;
 use MongoDB\Driver\Exception\InvalidArgumentException;
 
 class SearchController extends HttpController
@@ -64,11 +63,11 @@ class SearchController extends HttpController
     public function createIdFilter($idParam)
     {
         if (is_string($idParam)) {
-            return ['_id' => new ObjectId($idParam)];
+            return ['_id' => $idParam];
         }
         if (is_array($idParam)) {
             $ids = array_map(function ($id) {
-                return new ObjectId($id);
+                return new $id;
             }, $idParam);
             return [
                 '_id' => [
